@@ -1,0 +1,46 @@
+local player = game:GetService("Players").LocalPlayer
+local uis = game:GetService("UserInputService")
+
+-- Wait for character & humanoid
+local function getHumanoid()
+    local character = player.Character or player.CharacterAdded:Wait()
+    return character:WaitForChild("Humanoid")
+end
+
+local humanoid = getHumanoid()
+
+-- Speed settings
+local normalSpeed = 16            -- Default speed
+local boostSpeed = 67             -- Speed while boosted
+local boostDuration = 5           -- Seconds
+local isBoosting = false
+
+-- Function to boost speed
+local function boost()
+    if isBoosting then return end
+    isBoosting = true
+
+    humanoid.WalkSpeed = boostSpeed
+    task.wait(boostDuration)
+
+    -- Restore speed (only if player still exists)
+    if humanoid and humanoid.Parent then
+        humanoid.WalkSpeed = normalSpeed
+    end
+
+    isBoosting = false
+end
+
+-- Key trigger (Left Shift)
+uis.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    if input.KeyCode == Enum.KeyCode.LeftShift then
+        boost()
+    end
+end)
+
+-- Reset speed if character respawns
+player.CharacterAdded:Connect(function()
+    humanoid = getHumanoid()
+    humanoid.WalkSpeed = normalSpeed
+end)
